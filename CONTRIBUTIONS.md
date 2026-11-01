@@ -14,5 +14,6 @@
 
 **Matthew Leman "Philojyw"**:
 
-**Tyler Short "Tsyber"**: Implementation of adversary, attack 1.
+**Tyler Short "Tsyber"**: 
+* adversary.py : Implemented attacks 1 and 2 to simulate both a heartbeat delay and a corrupted checkpoint
 
