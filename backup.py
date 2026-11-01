@@ -2,7 +2,7 @@
 import socket
 import threading
 import sentinel
-from checkpoint import load_state, save_state
+from checkpoint import load_state
 
 HOST = "127.0.0.1"
 NEXT_PORT = 5002
@@ -34,12 +34,8 @@ def start_backup():
             try:
                 blocked_ips = load_state()
 
-            except (OSError, ValueError):
-                print("Failed to load checkpoint")
-                continue
-
-            if not isinstance(blocked_ips, list):
-                print("Invalid blacklist")
+            except (OSError, ValueError) as error:
+                print(f"Failed to load checkpoint: {error}")
                 continue
 
             # Tries to take over the original Sentinel port

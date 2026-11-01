@@ -43,12 +43,12 @@ python .\backup.py
 python .\sentinel.py
 ```
 
-**Terminal 4 - Start Replay Capture**
+**Terminal 4 - Start Delay Attack**
 ```powershell
 python .\adversary.py delay
 ```
 
-With the 3 prior systems running, the delay attack in Terminal 4 pauses the heartbeat in 30 second intervals
+With the 3 prior systems running, the delay attack in Terminal 4 sends a pause request every 30 seconds, and each request pauses heartbeats for 7 seconds.
 
 
 ### 3. Attack 2 - Checkpoint Tampering
