@@ -24,7 +24,7 @@ python .\sentinel.py
 
 The Sentinel sends heartbeats every second and randomly crashes after 20 - 40 seconds. The monitor detects the failure after approximately 3 seconds without a heartbeat.
 
-### 2. Attack 1 - Heartbeat Spoofing
+### 2. Attack 1 - Heartbeat Delay
 
 For this test, start the programs in the following order:
 
@@ -51,7 +51,7 @@ python .\adversary.py delay
 With the 3 prior systems running, the delay attack in Terminal 4 pauses the heartbeat in 30 second intervals
 
 
-### 3. Attack 2 - Heartbeat Replay
+### 3. Attack 2 - Checkpoint Tampering
 
 For this test, run this command: 
 
