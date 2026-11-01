@@ -8,7 +8,7 @@ from checkpoint import save_state, load_state
 
 # List of blacklisted IP addresses
 BLACKLISTED_IPS = ["203.0.113.10", "198.51.100.23"]
-
+pause_until = 0
 # Function to check if an IP address is blacklisted
 def check_ip(ip_address):
 
@@ -32,7 +32,7 @@ def check_request(ip_address, payload):
 
 # Function to receive messages over UDP
 def receive_message(server=None):
-
+    global pause_until
     created_socket = server is None
 
     # Creates a UDP socket
@@ -59,8 +59,14 @@ def receive_message(server=None):
 
             print("Received:", message)
 
+            # Checks if the message is a request to pause heartbeats
+            # to simulate a temporary delay in heartbeat messages
+            if message == "PAUSE_HEARTBEAT":
+                pause_until = time.monotonic() + 7
+                result = "Heartbeats paused for 7 seconds"
+
             # Checks whether the request is to block a new IP
-            if message.startswith("BLOCK_IP|"):
+            elif message.startswith("BLOCK_IP|"):
 
                 ip_address = message.split("|", 1)[1].strip()
 
@@ -107,15 +113,20 @@ def receive_message(server=None):
 def send_heartbeat():
     # Creates a UDP socket for sending the heartbeat message
     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as heartbeat_socket:
+        # while True:
+        #     # Sends a heartbeat message to the specified IP address and port
+        #     # to indicate that the sender is alive
+        #     heartbeat_socket.sendto(b"HEARTBEAT", ("127.0.0.1", 5001))
+
+        #     print("Heartbeat sent")
+
+        #     time.sleep(1)  # Wait for 1 seconds before sending the next heartbeat
         while True:
-            # Sends a heartbeat message to the specified IP address and port
-            # to indicate that the sender is alive
-            heartbeat_socket.sendto(b"HEARTBEAT", ("127.0.0.1", 5001))
+            if time.monotonic() >= pause_until:
+                heartbeat_socket.sendto(b"HEARTBEAT", ("127.0.0.1", 5001))
+                print("Heartbeat sent")
 
-            print("Heartbeat sent")
-
-            time.sleep(1)  # Wait for 1 seconds before sending the next heartbeat
-
+            time.sleep(1)
 
 # Function to simulate a random process crash
 def random_crash():

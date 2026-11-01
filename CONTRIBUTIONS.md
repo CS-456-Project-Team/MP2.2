@@ -7,7 +7,8 @@
 **Victor Troncoso "troncosv"**: 
 * checkpoint.py : Implemented functions to save and load the Sentinel's blacklist, preserving its state after a crash.
 * backup.py : Implemented a standby Sentinel that restores the saved blacklist and takes over the primary's operations when promoted.
-* sentinel.py : Updated the original Sentinel to support checkpoint saving while maintaining its existing firewall and heartbeat functionality.
+* sentinel.py : Updated the original Sentinel to support checkpoint saving while maintaining its existing firewall, heartbeat functionality, and simulated delay. 
+* monitor.py : Updated the code to detect when the sentinel crashes and automatically send a promotion signal to the backup.
   
 **Benjamin Mooneyham "Moonshammy"**:
 
