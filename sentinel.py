@@ -147,10 +147,15 @@ def random_crash():
 if __name__ == "__main__":
     # Restore the blacklist from the checkpoint
     try:
-        BLACKLISTED_IPS = list(load_state())
+        BLACKLISTED_IPS = load_state()
 
     except FileNotFoundError:
+        print("No checkpoint found. Creating initial checkpoint.")
         save_state(BLACKLISTED_IPS)
+
+    except (OSError, ValueError) as error:
+        print(f"Failed to load checkpoint: {error}")
+        raise SystemExit(1)
 
     print("Current blacklist:", BLACKLISTED_IPS)
 

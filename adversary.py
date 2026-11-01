@@ -3,11 +3,10 @@ import socket
 import time
 import sys
 import shutil
-from pathlib import Path
+from checkpoint import CHECKPOINT
 
 HOST = "127.0.0.1"
 SENTINEL_SCRIPT = "sentinel.py"
-CHECKPOINT = Path.cwd() / "checkpoint.json"
 VICTIM_PORT = 5000
 
 # Attack 1
@@ -54,7 +53,7 @@ if __name__ == "__main__":
     
     try:
         if len(sys.argv) != 2:
-            print("Usage: python attacker.py delay | tamper")
+            print("Usage: python adversary.py delay | tamper")
 
         elif sys.argv[1] == "delay":
             delay_heartbeat()
